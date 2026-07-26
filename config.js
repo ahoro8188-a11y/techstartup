@@ -9,10 +9,12 @@
 // ============================================================
 
 export const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyCORop0smI5Dk2sxNBri-Sa0KRLj-W2lqo",
+  authDomain: "techstartup-ba876.firebaseapp.com",
+  databaseURL: "https://techstartup-ba876-default-rtdb.asia-southeast1.firebase",
+  projectId: "techstartup-ba876",
+  storageBucket: "techstartup-ba876.firebasestorage.app",
+  messagingSenderId: "676758434999",
+  appId: "1:676758434999:web:6633d5a491f999d0d64932",
+  measurementId: "G-82LVR1GLLX"
 };
