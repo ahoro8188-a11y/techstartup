@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Log in — Nimbus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo"><span class="dot"></span>Nimbus</a>
+    <nav class="nav-links" id="navLinks">
+      <a href="index.html#features">Features</a>
+      <a href="feedback.html">Feedback</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <div class="nav-auth" id="navAuthSlot"></div>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<section class="auth-page">
+  <div class="auth-card">
+    <h1>Welcome back</h1>
+    <p class="auth-sub">Log in to your Nimbus workspace.</p>
+
+    <div class="form-error" id="formError"></div>
+    <div class="form-success" id="formSuccess"></div>
+
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" required autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" required autocomplete="current-password">
+        <a href="#" class="forgot-link" id="forgotLink">Forgot password?</a>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block" id="submitBtn">Log in</button>
+    </form>
+
+    <p class="auth-footer">Don't have an account? <a href="signup.html">Sign up</a></p>
+  </div>
+</section>
+
+<script type="module">
+  import { auth } from "./firebase-init.js";
+  import {
+    signInWithEmailAndPassword,
+    sendPasswordResetEmail
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+  const form = document.getElementById("loginForm");
+  const errorBox = document.getElementById("formError");
+  const successBox = document.getElementById("formSuccess");
+  const submitBtn = document.getElementById("submitBtn");
+  const forgotLink = document.getElementById("forgotLink");
+
+  function showError(message) {
+    successBox.classList.remove("show");
+    errorBox.textContent = message;
+    errorBox.classList.add("show");
+  }
+  function showSuccess(message) {
+    errorBox.classList.remove("show");
+    successBox.textContent = message;
+    successBox.classList.add("show");
+  }
+  function clearMessages() {
+    errorBox.classList.remove("show");
+    successBox.classList.remove("show");
+  }
+
+  const friendlyErrors = {
+    "auth/invalid-credential": "Incorrect email or password.",
+    "auth/user-not-found": "No account found with that email.",
+    "auth/wrong-password": "Incorrect email or password.",
+    "auth/invalid-email": "That email address doesn't look valid.",
+    "auth/too-many-requests": "Too many attempts — please wait a moment and try again.",
+  };
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    clearMessages();
+
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+
+    submitBtn.classList.add("btn-loading");
+    submitBtn.textContent = "Logging in…";
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      window.location.href = "dashboard.html";
+    } catch (err) {
+      showError(friendlyErrors[err.code] || "Something went wrong. Please try again.");
+      submitBtn.classList.remove("btn-loading");
+      submitBtn.textContent = "Log in";
+    }
+  });
+
+  forgotLink.addEventListener("click", async (e) => {
+    e.preventDefault();
+    clearMessages();
+    const email = document.getElementById("email").value.trim();
+    if (!email) {
+      showError("Enter your email above first, then click 'Forgot password?'");
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      showSuccess(`Password reset email sent to ${email}.`);
+    } catch (err) {
+      showError(friendlyErrors[err.code] || "Couldn't send reset email. Check the address and try again.");
+    }
+  });
+</script>
+
+<script type="module" src="auth.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
