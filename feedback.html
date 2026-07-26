@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feedback — Nimbus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo"><span class="dot"></span>Nimbus</a>
+    <nav class="nav-links" id="navLinks">
+      <a href="index.html#features">Features</a>
+      <a href="feedback.html">Feedback</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <div class="nav-auth" id="navAuthSlot"></div>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<section class="form-page">
+  <div class="form-page-head">
+    <h1>How are we doing?</h1>
+    <p>Your feedback goes straight to our team — good, bad, or somewhere in between.</p>
+  </div>
+
+  <div class="form-card">
+    <div class="form-error" id="formError"></div>
+    <div class="form-success" id="formSuccess"></div>
+
+    <form id="feedbackForm">
+      <div class="form-group">
+        <label>How would you rate your experience?</label>
+        <div class="rating-row" id="ratingRow">
+          <button type="button" class="rating-btn" data-rating="1">1</button>
+          <button type="button" class="rating-btn" data-rating="2">2</button>
+          <button type="button" class="rating-btn" data-rating="3">3</button>
+          <button type="button" class="rating-btn" data-rating="4">4</button>
+          <button type="button" class="rating-btn" data-rating="5">5</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="feedbackMessage">Tell us more</label>
+        <textarea id="feedbackMessage" rows="5" placeholder="What's working, what's not..." required></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block" id="submitBtn">Send feedback</button>
+    </form>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="footer-bottom">
+    <p>© 2026 Nimbus Inc.</p>
+    <div class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="contact.html">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<script type="module">
+  import { auth, db } from "./firebase-init.js";
+  import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const form = document.getElementById("feedbackForm");
+  const errorBox = document.getElementById("formError");
+  const successBox = document.getElementById("formSuccess");
+  const submitBtn = document.getElementById("submitBtn");
+  const ratingBtns = document.querySelectorAll(".rating-btn");
+  let selectedRating = null;
+
+  ratingBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      ratingBtns.forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+      selectedRating = Number(btn.dataset.rating);
+    });
+  });
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errorBox.classList.remove("show");
+    successBox.classList.remove("show");
+
+    if (!selectedRating) {
+      errorBox.textContent = "Please select a rating.";
+      errorBox.classList.add("show");
+      return;
+    }
+
+    const message = document.getElementById("feedbackMessage").value.trim();
+
+    submitBtn.classList.add("btn-loading");
+    submitBtn.textContent = "Sending…";
+
+    try {
+      await addDoc(collection(db, "feedback"), {
+        rating: selectedRating,
+        message,
+        userEmail: auth.currentUser ? auth.currentUser.email : "anonymous",
+        createdAt: serverTimestamp()
+      });
+      successBox.textContent = "Thanks for the feedback — we read every submission!";
+      successBox.classList.add("show");
+      form.reset();
+      ratingBtns.forEach(b => b.classList.remove("selected"));
+      selectedRating = null;
+    } catch (err) {
+      errorBox.textContent = "Something went wrong sending your feedback. Please try again.";
+      errorBox.classList.add("show");
+    } finally {
+      submitBtn.classList.remove("btn-loading");
+      submitBtn.textContent = "Send feedback";
+    }
+  });
+</script>
+
+<script type="module" src="auth.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
