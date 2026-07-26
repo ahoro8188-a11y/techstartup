@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact — Nimbus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo"><span class="dot"></span>Nimbus</a>
+    <nav class="nav-links" id="navLinks">
+      <a href="index.html#features">Features</a>
+      <a href="feedback.html">Feedback</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <div class="nav-auth" id="navAuthSlot"></div>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<section class="form-page">
+  <div class="form-page-head">
+    <h1>Get in touch</h1>
+    <p>Questions, partnership ideas, or just want to say hi — we'd love to hear from you.</p>
+  </div>
+
+  <div class="form-card">
+    <div class="form-error" id="formError"></div>
+    <div class="form-success" id="formSuccess"></div>
+
+    <form id="contactForm">
+      <div class="form-group">
+        <label for="contactName">Name</label>
+        <input type="text" id="contactName" required>
+      </div>
+      <div class="form-group">
+        <label for="contactEmail">Email</label>
+        <input type="email" id="contactEmail" required>
+      </div>
+      <div class="form-group">
+        <label for="contactSubject">Subject</label>
+        <input type="text" id="contactSubject" required>
+      </div>
+      <div class="form-group">
+        <label for="contactMessage">Message</label>
+        <textarea id="contactMessage" rows="5" required></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block" id="submitBtn">Send message</button>
+    </form>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="footer-bottom">
+    <p>© 2026 Nimbus Inc.</p>
+    <div class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="feedback.html">Feedback</a>
+    </div>
+  </div>
+</footer>
+
+<script type="module">
+  import { db } from "./firebaseinit.js";
+  import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const form = document.getElementById("contactForm");
+  const errorBox = document.getElementById("formError");
+  const successBox = document.getElementById("formSuccess");
+  const submitBtn = document.getElementById("submitBtn");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errorBox.classList.remove("show");
+    successBox.classList.remove("show");
+
+    const name = document.getElementById("contactName").value.trim();
+    const email = document.getElementById("contactEmail").value.trim();
+    const subject = document.getElementById("contactSubject").value.trim();
+    const message = document.getElementById("contactMessage").value.trim();
+
+    submitBtn.classList.add("btn-loading");
+    submitBtn.textContent = "Sending…";
+
+    try {
+      await addDoc(collection(db, "contact"), {
+        name, email, subject, message,
+        createdAt: serverTimestamp()
+      });
+      successBox.textContent = "Message sent — we'll get back to you within a day.";
+      successBox.classList.add("show");
+      form.reset();
+    } catch (err) {
+      errorBox.textContent = "Something went wrong sending your message. Please try again.";
+      errorBox.classList.add("show");
+    } finally {
+      submitBtn.classList.remove("btn-loading");
+      submitBtn.textContent = "Send message";
+    }
+  });
+</script>
+
+<script type="module" src="auth.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
